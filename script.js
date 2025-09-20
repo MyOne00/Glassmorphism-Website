@@ -49,51 +49,89 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ====================================
-    // NAVIGATION ACTIVE STATE ON SCROLL
+    // NAVIGATION ACTIVE STATE ON SCROLL - VERBESSERT
     // ====================================
     function updateActiveNavigation() {
-        // Alle zu beobachtenden Sektionen in Reihenfolge
         const sectionIds = ['home', 'about', 'features', 'gallery', 'contact'];
-        const sections = sectionIds
-            .map(id => document.getElementById(id))
-            .filter(Boolean);
-        const scrollPos = window.pageYOffset + 90;
-
-        let activeFound = false;
-
-        for (let i = 0; i < sections.length; i++) {
-            const section = sections[i];
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-
-            // Wenn wir am Ende sind, oder ganz unten (Kontakt), diesen Bereich aktiv setzen
-            if (i === sections.length - 1 && window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 2) {
-                navLinks.forEach(link => link.classList.remove('active'));
-                const lastLink = document.querySelector(`.nav-link[href="#${sectionIds[i]}"]`);
-                if (lastLink) lastLink.classList.add('active');
-                activeFound = true;
-                break;
+        const sections = [];
+        
+        // Sammle alle existierenden Sektionen mit ihren Positionen
+        sectionIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                sections.push({
+                    id: id,
+                    element: element,
+                    top: element.offsetTop,
+                    bottom: element.offsetTop + element.offsetHeight
+                });
             }
+        });
 
-            // Standardbereichsprüfung
-            if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                navLinks.forEach(link => link.classList.remove('active'));
-                const activeLink = document.querySelector(`.nav-link[href="#${sectionIds[i]}"]`);
-                if (activeLink) activeLink.classList.add('active');
-                activeFound = true;
-                break;
+        if (sections.length === 0) return;
+
+        const scrollPos = window.pageYOffset + 100; // Offset für bessere Erkennung
+        const windowBottom = window.pageYOffset + window.innerHeight;
+        const documentHeight = document.body.offsetHeight;
+        
+        let activeSection = null;
+
+        // Spezialfall: Ganz am Ende der Seite - Contact aktivieren
+        if (windowBottom >= documentHeight - 10) {
+            activeSection = 'contact';
+        }
+        // Spezialfall: Ganz am Anfang der Seite - Home aktivieren  
+        else if (scrollPos <= sections[0].top + 50) {
+            activeSection = 'home';
+        }
+        // Normale Sektionserkennung
+        else {
+            for (let i = 0; i < sections.length; i++) {
+                const section = sections[i];
+                const nextSection = sections[i + 1];
+                
+                // Aktuelle Sektion bestimmen basierend auf Scroll-Position
+                if (scrollPos >= section.top - 50) {
+                    // Wenn es eine nächste Sektion gibt, prüfen ob wir noch in der aktuellen sind
+                    if (nextSection && scrollPos < nextSection.top - 50) {
+                        activeSection = section.id;
+                        break;
+                    }
+                    // Wenn es keine nächste Sektion gibt, ist diese aktiv
+                    else if (!nextSection) {
+                        activeSection = section.id;
+                        break;
+                    }
+                    // Sonst diese Sektion als vorläufig aktiv setzen
+                    activeSection = section.id;
+                }
             }
         }
 
-        // Falls kein Bereich aktiv (z.B. ganz am Seitenanfang), Home aktivieren
-        if (!activeFound) {
-            navLinks.forEach(link => link.classList.remove('active'));
-            const homeLink = document.querySelector('.nav-link[href="#home"]');
-            if (homeLink) homeLink.classList.add('active');
+        // Navigation Links aktualisieren
+        if (activeSection) {
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === '#' + activeSection) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
         }
     }
 
-    window.addEventListener('scroll', updateActiveNavigation);
+    // Debounced Scroll Event für bessere Performance
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(updateActiveNavigation, 10);
+    });
+
+    // Initial ausführen
+    updateActiveNavigation();
 
     // ====================================
     // ANIMATED COUNTER FOR STATS
@@ -239,24 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initTestimonialCarousel();
 
     // ====================================
-    // PERFORMANCE OPTIMIZATIONS
-    // ====================================
-
-    // Debounce Funktion für Scroll-Events
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    window.addEventListener('scroll', debounce(updateActiveNavigation, 16));
-
-    // ====================================
     // ACCESSIBILITY ENHANCEMENTS
     // ====================================
 
@@ -299,9 +319,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ====================================
     console.log(`
     🌟 Glassmorphism Website geladen!
-    ═════════════════════════════════
+    ╔══════════════════════════════════╗
     ✨ Features aktiviert:
-       • Smooth Scroll Navigation
+       • Smooth Scroll Navigation (Verbessert)
        • Animierte Counter
        • Intersection Observer Animation
        • Dynamische Partikel
@@ -310,6 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
        • Performance Optimierungen
 
     🎨 Design by Johann Wohlgemuth
-    📧 Kontakt: johannwohlgemuth139@gmail.com
+    🔧 Kontakt: johannwohlgemuth139@gmail.com
     `);
 });

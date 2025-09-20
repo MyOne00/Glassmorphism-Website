@@ -1,6 +1,7 @@
 /* ====================================
    GLOBAL STYLES & RESET
 ==================================== */
+
 *,
 *::before,
 *::after {
@@ -15,8 +16,7 @@ html {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(120deg, #20284a 0%, #7a89ae 100%), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-    background-size: cover;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: #fff;
     overflow-x: hidden;
     min-height: 100vh;
